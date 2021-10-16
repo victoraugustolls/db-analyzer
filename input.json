@@ -1,0 +1,65 @@
+{
+  "schema": {
+    "tables": [
+      {
+        "name": "masters.hypo",
+        "columns": [
+          {
+            "name": "val",
+            "type": "text",
+            "nullable": "YES"
+          },
+          {
+            "name": "id",
+            "type": "int4",
+            "nullable": "YES"
+          }
+        ],
+        "indexes": []
+      }
+    ]
+  },
+  "suggestions": [
+    {
+      "query": {
+        "id": "abc123",
+        "raw": "select val from masters.hypo where id = 1 and val = 'line 1';",
+        "plan": {
+          "cost": 2041.00,
+          "raw": [
+            {
+              "Plan": {
+                "Node Type": "Seq Scan",
+                "Parallel Aware": false,
+                "Relation Name": "hypo",
+                "Alias": "hypo",
+                "Startup Cost": 0.00,
+                "Total Cost": 2041.00,
+                "Plan Rows": 1,
+                "Plan Width": 7,
+                "Filter": "((id = 1) AND (val = 'line 1'::text))"
+              }
+            }
+          ]
+        }
+      },
+      "actions": [
+        {
+          "name": "idx_hypo_id",
+          "type": "index",
+          "command": "create index on masters.hypo(id);"
+        },
+        {
+          "name": "idx_hypo_id_val_eq_line_1",
+          "type": "index",
+          "command": "create index on masters.hypo(id) where val = 'line 1';"
+        },
+        {
+          "name": "should be ignored for now",
+          "type": "materialized view",
+          "command": "create materialized view"
+        }
+      ]
+    }
+  ]
+}
