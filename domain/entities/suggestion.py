@@ -6,6 +6,6 @@ from .action import Action
 
 @dataclass
 class Suggestion:
-    actions: list[Action]
-    query: Query | None
+    action: Action
+    queries: list[Query]
 

@@ -22,13 +22,12 @@ async def main():
 
     suggestions.extend(new_suggestions)
 
-    results = []
-    for suggestion in suggestions:
-        results.append(await executor.execute(suggestion))
-
-    for result in results:
-        print(result.message)
-        print()
+    result = await executor.execute(suggestions)
+    for i, tree in enumerate(result.nodes):
+        print(f"Result #{i}")
+        for j, node in enumerate(tree):
+            print(f"\t- Action #{j}")
+            print(f"\t\t{node.command.description()}")
 
 
 def parse_input() -> tuple[Schema, list[Suggestion]]:
@@ -45,15 +44,19 @@ def parse_input() -> tuple[Schema, list[Suggestion]]:
 
     suggestions = [
         Suggestion(
-            actions=[
-                Action(name=action["name"], type_=action["type"], command=action["command"])
-                for action in suggestion["actions"]
-            ],
-            query=Query(
-                id=suggestion["query"]["id"],
-                raw=suggestion["query"]["raw"],
-                plan=Plan(**suggestion["query"]["plan"]),
+            action=Action(
+                name=suggestion["action"]["name"],
+                type_=suggestion["action"]["type"],
+                command=suggestion["action"]["command"],
             ),
+            queries=[
+                Query(
+                    id=query["id"],
+                    raw=query["raw"],
+                    plan=Plan(**query["plan"]),
+                )
+                for query in suggestion["queries"]
+            ]
         )
         for suggestion in data["suggestions"]
     ]

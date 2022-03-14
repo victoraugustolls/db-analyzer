@@ -19,5 +19,5 @@ class ActionResult:
 @dataclass
 class SuggestionResult:
     actions: list[ActionResult]
-    query: Query
+    query: list[Query]
     message: str

@@ -7,4 +7,4 @@ from .plan import Plan
 class Query:
     id: str
     raw: str
-    plan: Plan
+    plan: Plan | None

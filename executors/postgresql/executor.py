@@ -2,19 +2,26 @@ import json
 
 import asyncpg
 
-from .column_tetris import zero_values
 from domain.entities.action import Action, ActionType
 from domain.entities.query import Query
 from domain.entities.result import ActionResult, SuggestionResult
 from domain.entities.schema import Schema, Column
 from domain.entities.suggestion import Suggestion
 from vos import DSN
+from .column_tetris import zero_values
+from .commands import IndexCommand
+from analyzer.analyzer import Analyzer
+from analyzer.command import Command
+from analyzer.node import Node
+from analyzer.result import Result
 
 
 class PostgreSQLExecutor:
+    _analyzer: Analyzer
     _pool: asyncpg.Pool
 
     def __init__(self, pool: asyncpg.Pool) -> None:
+        self._analyzer = Analyzer()
         self._pool = pool
 
     @classmethod
@@ -60,6 +67,7 @@ class PostgreSQLExecutor:
                 continue
 
             # Sort key sizes and check if optimized order is equal to original order and build command for execution
+            columns: list[str] = []
             old_row: str = "pg_column_size(row("
             new_row: str = "pg_column_size(row("
             keys = sorted(sizes.keys(), reverse=True)
@@ -69,17 +77,22 @@ class PostgreSQLExecutor:
 
                 old_row += f"{zero_values[table.columns[i].type]}::{table.columns[i].type},"
                 new_row += f"{zero_values[sizes[keys[i]].type]}::{sizes[keys[i]].type},"
+                columns.append(f"{sizes[keys[i]].name}::{sizes[keys[i]].type}")
 
             old_row = old_row.removesuffix(",") + "))"
             new_row = new_row.removesuffix(",") + "))"
 
             suggestions.append(Suggestion(
-                actions=[Action(
+                action=Action(
                     name=table.name,
                     type_=ActionType.COLUMN_TETRIS.value,
                     command=f"select {old_row}, {new_row};",
+                ),
+                queries=[Query(
+                    id=f"column_tetris_{table.name}",
+                    raw=f'({", ".join(columns)})',
+                    plan=None,
                 )],
-                query=None,
             ))
 
         return suggestions
@@ -103,47 +116,68 @@ class PostgreSQLExecutor:
     
     Sort the result by delta and return the best index to be created.
     """
-    async def execute(self, suggestion: Suggestion) -> SuggestionResult:
-        results: list[ActionResult] = []
+    async def execute(self, suggestions: [Suggestion]) -> Result:
+        commands: list[Command] = []
+        for suggestion in suggestions:
+            if suggestion.action.type_ != ActionType.INDEX.value:
+                continue
+            commands.append(IndexCommand(suggestion=suggestion, conn=self._pool))
 
-        for action in suggestion.actions:
-            # We only accept index actions for now
-            match action.type_:
-                case ActionType.INDEX.value:
-                    result = await self._process_index_action(action=action, query=suggestion.query)
-                case ActionType.COLUMN_TETRIS.value:
-                    result = await self._process_column_tetris_action(action=action)
-                case _:
-                    continue
+        return await self._analyzer.generate(actions=commands)
 
-            results.append(result)
+        # results: list[ActionResult] = []
+        #
+        # for suggestion in suggestions:
+        #     action = suggestion.action
+        #     # We only accept index actions for now
+        #     match action.type_:
+        #         case ActionType.INDEX.value:
+        #             result = await self._process_index_action(action=action, queries=suggestion.queries)
+        #         case ActionType.COLUMN_TETRIS.value:
+        #             result = await self._process_column_tetris_action(action=action, query=suggestion.queries[0])
+        #         case _:
+        #             continue
+        #
+        #     results.append(result)
+        #
+        # results.sort(key=lambda r: r.delta, reverse=True)
+        # return SuggestionResult(actions=results, query=[], message=results[0].message)
 
-        results.sort(key=lambda r: r.delta, reverse=True)
-        return SuggestionResult(actions=results, query=suggestion.query, message=results[0].message)
+    async def _process_index_action(self, queries: [Query], action: Action) -> ActionResult:
+        total_cost = 0
+        for query in queries:
+            total_cost += query.plan.cost
 
-    async def _process_index_action(self, query: Query, action: Action) -> ActionResult:
+        new_total_cost = 0
+
         await self._pool.execute(query=self._format_hypothetical_index(action.command))
 
-        record: asyncpg.Record = await self._pool.fetchval(query=self._format_explain(query.raw))
-        plan = json.loads(record)
+        for query in queries:
+            record: asyncpg.Record = await self._pool.fetchval(query=self._format_explain(query.raw))
+            plan = json.loads(record)
+            cost = plan[0]["Plan"]["Total Cost"]
+            new_total_cost += cost
+            self._db.add_query_action(query=query.id, action=action)
 
         await self._pool.execute(query="select hypopg_reset();")
 
-        new_cost = plan[0]["Plan"]["Total Cost"]
+        delta = total_cost - new_total_cost
 
-        message = f"The query cost can be reduced by {query.plan.cost - new_cost}, " \
-                  f"from {query.plan.cost} to {new_cost}, by creating the index '{action.name}'."
+        message = f"The query cost can be reduced by {delta}, " \
+                  f"from {total_cost} to {new_total_cost}, by creating the index '{action.name}'."
 
-        return ActionResult(action=action, new_cost=new_cost, old_cost=query.plan.cost, message=message)
+        self._db.add_action(Result(action=action, queries={q for q in queries}, delta=delta))
 
-    async def _process_column_tetris_action(self, action: Action) -> ActionResult:
+        return ActionResult(action=action, new_cost=new_total_cost, old_cost=total_cost, message=message)
+
+    async def _process_column_tetris_action(self, action: Action, query: Query) -> ActionResult:
         record: asyncpg.Record = await self._pool.fetchrow(query=action.command)
 
         old_size = record[0]
         new_size = record[1]
 
         message = f"The table '{action.name}' row size can be reduced by {old_size - new_size} bytes, " \
-                  f"from {old_size} to {new_size}, by reordering the columns."
+                  f"from {old_size} to {new_size}, by reordering the columns to: {query.raw}."
 
         return ActionResult(action=action, new_cost=new_size, old_cost=old_size, message=message)
 
