@@ -51,6 +51,7 @@
         {
           "id": "abc123",
           "raw": "select val from masters.hypo where id = 1 and val = 'line 1';",
+          "runs": 10000,
           "plan": {
             "cost": 2041.00,
             "raw": [
@@ -82,6 +83,7 @@
         {
           "id": "abc123",
           "raw": "select val from masters.hypo where id = 1 and val = 'line 1';",
+          "runs": 10000,
           "plan": {
             "cost": 2041.00,
             "raw": [

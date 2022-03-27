@@ -41,61 +41,63 @@ class PostgreSQLExecutor:
     - https://stackoverflow.com/questions/2966524/calculating-and-saving-space-in-postgresql
     """
     async def prepare(self, schema: Schema) -> list[Suggestion]:
-        pg_types: dict[str, int] = {}
-        suggestions: list[Suggestion] = []
-
-        # Fill postgres types information for column tetris
-        records: list[asyncpg.Record] = await self._pool.fetch("select typname, typlen from pg_type;")
-        for record in records:
-            pg_types[record[0]] = record[1]
-
-        for table in schema.tables:
-            # dict of column size to (column_name, column_type)
-            sizes: dict[int, Column] = {}
-
-            for column in table.columns:
-                size = pg_types[column.type]
-                # Might be a custom type
-                if size is None:
-                    sizes = {}
-                    break
-
-                sizes[size] = column
-
-            # In the case of missing type, don't try to optimize table column order
-            if len(sizes) == 0:
-                continue
-
-            # Sort key sizes and check if optimized order is equal to original order and build command for execution
-            columns: list[str] = []
-            old_row: str = "pg_column_size(row("
-            new_row: str = "pg_column_size(row("
-            keys = sorted(sizes.keys(), reverse=True)
-            for i in range(len(keys)):
-                if sizes[keys[i]].name == table.columns[i].name:
-                    continue
-
-                old_row += f"{zero_values[table.columns[i].type]}::{table.columns[i].type},"
-                new_row += f"{zero_values[sizes[keys[i]].type]}::{sizes[keys[i]].type},"
-                columns.append(f"{sizes[keys[i]].name}::{sizes[keys[i]].type}")
-
-            old_row = old_row.removesuffix(",") + "))"
-            new_row = new_row.removesuffix(",") + "))"
-
-            suggestions.append(Suggestion(
-                action=Action(
-                    name=table.name,
-                    type_=ActionType.COLUMN_TETRIS.value,
-                    command=f"select {old_row}, {new_row};",
-                ),
-                queries=[Query(
-                    id=f"column_tetris_{table.name}",
-                    raw=f'({", ".join(columns)})',
-                    plan=None,
-                )],
-            ))
-
-        return suggestions
+        return []
+        # pg_types: dict[str, int] = {}
+        # suggestions: list[Suggestion] = []
+        #
+        # # Fill postgres types information for column tetris
+        # records: list[asyncpg.Record] = await self._pool.fetch("select typname, typlen from pg_type;")
+        # for record in records:
+        #     pg_types[record[0]] = record[1]
+        #
+        # for table in schema.tables:
+        #     # dict of column size to (column_name, column_type)
+        #     sizes: dict[int, Column] = {}
+        #
+        #     for column in table.columns:
+        #         size = pg_types[column.type]
+        #         # Might be a custom type
+        #         if size is None:
+        #             sizes = {}
+        #             break
+        #
+        #         sizes[size] = column
+        #
+        #     # In the case of missing type, don't try to optimize table column order
+        #     if len(sizes) == 0:
+        #         continue
+        #
+        #     # Sort key sizes and check if optimized order is equal to original order and build command for execution
+        #     columns: list[str] = []
+        #     old_row: str = "pg_column_size(row("
+        #     new_row: str = "pg_column_size(row("
+        #     keys = sorted(sizes.keys(), reverse=True)
+        #     for i in range(len(keys)):
+        #         if sizes[keys[i]].name == table.columns[i].name:
+        #             continue
+        #
+        #         old_row += f"{zero_values[table.columns[i].type]}::{table.columns[i].type},"
+        #         new_row += f"{zero_values[sizes[keys[i]].type]}::{sizes[keys[i]].type},"
+        #         columns.append(f"{sizes[keys[i]].name}::{sizes[keys[i]].type}")
+        #
+        #     old_row = old_row.removesuffix(",") + "))"
+        #     new_row = new_row.removesuffix(",") + "))"
+        #
+        #     suggestions.append(Suggestion(
+        #         action=Action(
+        #             name=table.name,
+        #             type_=ActionType.COLUMN_TETRIS.value,
+        #             command=f"select {old_row}, {new_row};",
+        #         ),
+        #         queries=[Query(
+        #             id=f"column_tetris_{table.name}",
+        #             raw=f'({", ".join(columns)})',
+        #             runs=1,
+        #             plan=None,
+        #         )],
+        #     ))
+        #
+        # return suggestions
 
     """
     New actions might appear given a query, depending on the RDBMS.
@@ -116,12 +118,12 @@ class PostgreSQLExecutor:
     
     Sort the result by delta and return the best index to be created.
     """
-    async def execute(self, suggestions: [Suggestion]) -> Result:
+    async def execute(self, suggestions: [Suggestion], schema: Schema) -> Result:
         commands: list[Command] = []
         for suggestion in suggestions:
             if suggestion.action.type_ != ActionType.INDEX.value:
                 continue
-            commands.append(IndexCommand(suggestion=suggestion, conn=self._pool))
+            commands.append(IndexCommand(suggestion=suggestion, conn=self._pool, queries=schema.queries))
 
         return await self._analyzer.generate(actions=commands)
 

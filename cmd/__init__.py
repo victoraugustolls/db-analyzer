@@ -22,25 +22,37 @@ async def main():
 
     suggestions.extend(new_suggestions)
 
-    result = await executor.execute(suggestions)
+    result = await executor.execute(suggestions, schema)
     for i, tree in enumerate(result.nodes):
-        print(f"Result #{i}")
+        print(f"Result #{i} - Total gains: {tree[len(tree)-1].gain} / Total cost: {tree[len(tree)-1].cost} / Delta: {tree[len(tree)-1].delta}")
         for j, node in enumerate(tree):
             print(f"\t- Action #{j}")
-            print(f"\t\t{node.command.description()}")
+            print(f"\t\t{node.description}")
 
 
 def parse_input() -> tuple[Schema, list[Suggestion]]:
-    with open("../input.json") as file:
+    with open("../flagr.json") as file:
         data = json.load(file)
 
-    schema = Schema(tables=[
-        Table(name=table["name"], columns=[
-            Column(**column)
-            for column in table["columns"]
-        ])
-        for table in data["schema"]["tables"]]
+    schema = Schema(
+        tables=[Table(
+            name=table["name"],
+            columns=[Column(**column) for column in table["columns"]]
+        ) for table in data["schema"]["tables"]],
+        queries=[Query(
+            id=query["id"],
+            raw=query["raw"],
+            runs=query["runs"],
+            plan=Plan(**query["plan"]),
+        ) for query in data["schema"]["queries"]]
     )
+
+    def find_query(uid: str) -> Query:
+        for query in schema.queries:
+            if query.id == uid:
+                return query
+
+        raise Exception("missing query definition for id:", uid)
 
     suggestions = [
         Suggestion(
@@ -49,14 +61,7 @@ def parse_input() -> tuple[Schema, list[Suggestion]]:
                 type_=suggestion["action"]["type"],
                 command=suggestion["action"]["command"],
             ),
-            queries=[
-                Query(
-                    id=query["id"],
-                    raw=query["raw"],
-                    plan=Plan(**query["plan"]),
-                )
-                for query in suggestion["queries"]
-            ]
+            queries=[find_query(query) for query in suggestion["queries"]]
         )
         for suggestion in data["suggestions"]
     ]

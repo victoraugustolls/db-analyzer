@@ -2,105 +2,597 @@
   "schema": {
     "tables": [
       {
-        "name": "masters.hypo",
+        "name": "public.allow_list",
         "columns": [
           {
-            "name": "val",
+            "name": "segment_id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "flag_id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "resource",
             "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "variant_id",
+            "type": "int4",
             "nullable": "YES"
+          }
+        ]
+      },
+      {
+        "name": "public.flag",
+        "columns": [
+          {
+            "name": "active",
+            "type": "bool",
+            "nullable": "NO"
+          },
+          {
+            "name": "salt",
+            "type": "uuid",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "description",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "name",
+            "type": "text",
+            "nullable": "NO"
           },
           {
             "name": "id",
             "type": "int4",
-            "nullable": "YES"
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "public_id",
+            "type": "uuid",
+            "nullable": "NO"
           }
-        ],
-        "indexes": []
+        ]
       },
       {
-        "name": "masters.hypo_2",
+        "name": "public.resource_group",
         "columns": [
           {
-            "name": "val_1",
+            "name": "id",
             "type": "int4",
-            "nullable": "YES"
+            "nullable": "NO"
           },
           {
-            "name": "val_2",
-            "type": "int8",
-            "nullable": "YES"
+            "name": "public_id",
+            "type": "uuid",
+            "nullable": "NO"
           },
           {
-            "name": "val_3",
-            "type": "int2",
-            "nullable": "YES"
+            "name": "created_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "active",
+            "type": "bool",
+            "nullable": "NO"
+          },
+          {
+            "name": "name",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_by",
+            "type": "text",
+            "nullable": "NO"
           }
-        ],
-        "indexes": []
+        ]
+      },
+      {
+        "name": "public.resource_group_membership",
+        "columns": [
+          {
+            "name": "created_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "active",
+            "type": "bool",
+            "nullable": "NO"
+          },
+          {
+            "name": "resource_group_id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "member",
+            "type": "text",
+            "nullable": "NO"
+          }
+        ]
+      },
+      {
+        "name": "public.restriction",
+        "columns": [
+          {
+            "name": "segment_id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "type",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "value",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "operator",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "property",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "public_id",
+            "type": "uuid",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "id",
+            "type": "int4",
+            "nullable": "NO"
+          }
+        ]
+      },
+      {
+        "name": "public.restriction_type_operator",
+        "columns": [
+          {
+            "name": "operator",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "type",
+            "type": "text",
+            "nullable": "NO"
+          }
+        ]
+      },
+      {
+        "name": "public.segment",
+        "columns": [
+          {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "public_id",
+            "type": "uuid",
+            "nullable": "NO"
+          },
+          {
+            "name": "salt",
+            "type": "uuid",
+            "nullable": "NO"
+          },
+          {
+            "name": "rollout",
+            "type": "int2",
+            "nullable": "NO"
+          },
+          {
+            "name": "priority",
+            "type": "int2",
+            "nullable": "NO"
+          },
+          {
+            "name": "flag_id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "description",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "name",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "active",
+            "type": "bool",
+            "nullable": "NO"
+          }
+        ]
+      },
+      {
+        "name": "public.segment_resource_group",
+        "columns": [
+          {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "resource_group_id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "segment_id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "active",
+            "type": "bool",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          }
+        ]
+      },
+      {
+        "name": "public.variant",
+        "columns": [
+          {
+            "name": "public_id",
+            "type": "uuid",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "active",
+            "type": "bool",
+            "nullable": "NO"
+          },
+          {
+            "name": "id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "name",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "segment_id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "percent",
+            "type": "int2",
+            "nullable": "NO"
+          },
+          {
+            "name": "metadata",
+            "type": "jsonb",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_by",
+            "type": "text",
+            "nullable": "NO"
+          }
+        ]
+      }
+    ],
+    "queries": [
+      {
+        "id": "active_resource_groups_from_member",
+        "raw": "select resource_group_id from resource_group_membership where member = '12345' and active is true;",
+        "runs": 10000,
+        "plan": {
+          "cost": 2375150.10,
+          "raw": [
+            {
+              "Plan": {
+                "Node Type": "Gather",
+                "Parallel Aware": false,
+                "Startup Cost": 1000.00,
+                "Total Cost": 2375150.10,
+                "Plan Rows": 281,
+                "Plan Width": 4,
+                "Workers Planned": 4,
+                "Single Copy": false,
+                "Plans": [
+                  {
+                    "Node Type": "Seq Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": true,
+                    "Relation Name": "resource_group_membership",
+                    "Alias": "resource_group_membership",
+                    "Startup Cost": 0.00,
+                    "Total Cost": 2374122.00,
+                    "Plan Rows": 70,
+                    "Plan Width": 4,
+                    "Filter": "(member = '12345'::text)"
+                  }
+                ]
+              },
+              "JIT": {
+                "Functions": 4,
+                "Options": {
+                  "Inlining": true,
+                  "Optimization": true,
+                  "Expressions": true,
+                  "Deforming": true
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "resource_groups_from_member",
+        "raw": "select resource_group_id from resource_group_membership where member = '12345';",
+        "runs": 1000,
+        "plan": {
+          "cost": 2375150.10,
+          "raw": [
+            {
+              "Plan": {
+                "Node Type": "Gather",
+                "Parallel Aware": false,
+                "Startup Cost": 1000.00,
+                "Total Cost": 2375150.10,
+                "Plan Rows": 281,
+                "Plan Width": 4,
+                "Workers Planned": 4,
+                "Single Copy": false,
+                "Plans": [
+                  {
+                    "Node Type": "Seq Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": true,
+                    "Relation Name": "resource_group_membership",
+                    "Alias": "resource_group_membership",
+                    "Startup Cost": 0.00,
+                    "Total Cost": 2374122.00,
+                    "Plan Rows": 70,
+                    "Plan Width": 4,
+                    "Filter": "(member = '12345'::text)"
+                  }
+                ]
+              },
+              "JIT": {
+                "Functions": 4,
+                "Options": {
+                  "Inlining": true,
+                  "Optimization": true,
+                  "Expressions": true,
+                  "Deforming": true
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "insert_resource_group_membership",
+        "raw": "insert into resource_group_membership (resource_group_id, member, created_by, updated_by) values (1213, '1000', 'sql', 'sql');",
+        "runs": 500,
+        "plan": {
+          "cost": 0.01,
+          "raw": [
+            {
+              "Plan": {
+                "Node Type": "ModifyTable",
+                "Operation": "Insert",
+                "Parallel Aware": false,
+                "Relation Name": "resource_group_membership",
+                "Alias": "resource_group_membership",
+                "Startup Cost": 0.00,
+                "Total Cost": 0.01,
+                "Plan Rows": 1,
+                "Plan Width": 117,
+                "Plans": [
+                  {
+                    "Node Type": "Result",
+                    "Parent Relationship": "Member",
+                    "Parallel Aware": false,
+                    "Startup Cost": 0.00,
+                    "Total Cost": 0.01,
+                    "Plan Rows": 1,
+                    "Plan Width": 117
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "update_resource_group_membership",
+        "raw": "update resource_group_membership set active = false where member = '1000'",
+        "runs": 1,
+        "plan": {
+          "cost": 0.01,
+          "raw": [
+            {
+              "Plan": {
+                "Node Type": "ModifyTable",
+                "Operation": "Insert",
+                "Parallel Aware": false,
+                "Relation Name": "resource_group_membership",
+                "Alias": "resource_group_membership",
+                "Startup Cost": 0.00,
+                "Total Cost": 0.01,
+                "Plan Rows": 1,
+                "Plan Width": 117,
+                "Plans": [
+                  {
+                    "Node Type": "Result",
+                    "Parent Relationship": "Member",
+                    "Parallel Aware": false,
+                    "Startup Cost": 0.00,
+                    "Total Cost": 0.01,
+                    "Plan Rows": 1,
+                    "Plan Width": 117
+                  }
+                ]
+              }
+            }
+          ]
+        }
       }
     ]
   },
   "suggestions": [
     {
       "action": {
-        "name": "idx_hypo_id",
+        "name": "idx_resource_group_member",
         "type": "index",
-        "command": "create index on masters.hypo(id);"
+        "command": "create index on resource_group_membership(member);"
       },
       "queries": [
-        {
-          "id": "abc123",
-          "raw": "select val from masters.hypo where id = 1 and val = 'line 1';",
-          "plan": {
-            "cost": 2041.00,
-            "raw": [
-              {
-                "Plan": {
-                  "Node Type": "Seq Scan",
-                  "Parallel Aware": false,
-                  "Relation Name": "hypo",
-                  "Alias": "hypo",
-                  "Startup Cost": 0.00,
-                  "Total Cost": 2041.00,
-                  "Plan Rows": 1,
-                  "Plan Width": 7,
-                  "Filter": "((id = 1) AND (val = 'line 1'::text))"
-                }
-              }
-            ]
-          }
-        }
+        "active_resource_groups_from_member",
+        "resource_groups_from_member"
       ]
     },
     {
       "action": {
-        "name": "idx_hypo_id_val_eq_line_1",
+        "name": "idx_resource_group_member",
         "type": "index",
-        "command": "create index on masters.hypo(id) where val = 'line 1';"
+        "command": "create index on resource_group_membership(member) where active is true;"
       },
       "queries": [
-        {
-          "id": "abc123",
-          "raw": "select val from masters.hypo where id = 1 and val = 'line 1';",
-          "plan": {
-            "cost": 2041.00,
-            "raw": [
-              {
-                "Plan": {
-                  "Node Type": "Seq Scan",
-                  "Parallel Aware": false,
-                  "Relation Name": "hypo",
-                  "Alias": "hypo",
-                  "Startup Cost": 0.00,
-                  "Total Cost": 2041.00,
-                  "Plan Rows": 1,
-                  "Plan Width": 7,
-                  "Filter": "((id = 1) AND (val = 'line 1'::text))"
-                }
-              }
-            ]
-          }
-        }
+        "active_resource_groups_from_member"
       ]
     }
   ]

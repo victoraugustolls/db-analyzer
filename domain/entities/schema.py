@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from domain.entities.query import Query
+
 
 @dataclass
 class Column:
@@ -17,3 +19,4 @@ class Table:
 @dataclass
 class Schema:
     tables: list[Table]
+    queries: list[Query]

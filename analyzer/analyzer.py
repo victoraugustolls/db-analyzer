@@ -23,7 +23,8 @@ class Analyzer:
 
         # Order the leaves in descending order by delta.
         # This means that leaves with higher cost reductions comes first on the list.
-        self._leaves.sort(key=lambda x: (x.gain, -x.cost), reverse=True)
+        # self._leaves.sort(key=lambda x: (int(x.gain), -x.cost), reverse=True)
+        self._leaves.sort(key=lambda x: int(x.delta), reverse=True)
 
         result = Result()
         for leaf in self._leaves:
@@ -43,7 +44,7 @@ class Analyzer:
         cumulative_gain = 0
 
         for index, action in enumerate(actions):
-            gain, cost = await action.apply()
+            queries_gain, gain, cost = await action.apply()
             cumulative_gain += gain
 
             # If gain > 0, then there was a reduction on total cost.
@@ -56,10 +57,23 @@ class Analyzer:
 
                 # Recursively build the Node tree.
                 new_node = await self._mount(
-                    node=Node(command=action, gain=new_gain, cost=new_cost, parent=node),
+                    node=Node(
+                        command=action,
+                        command_queries_gain=queries_gain,
+                        command_gain=gain,
+                        command_cost=cost,
+                        queries_gain=node.queries_gain,
+                        gain=new_gain,
+                        cost=new_cost,
+                        parent=node,
+                    ),
                     actions=new_actions,
                 )
                 node.add_child(child=new_node)
+
+            # If the cost was higher than the gains, consider the current node as a leaf:
+            if cost > gain:
+                self._leaves.append(node)
 
             # Rollback the executed action.
             await action.rollback()
