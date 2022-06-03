@@ -2,6 +2,7 @@ import json
 
 import asyncpg
 
+import querydb
 from domain.entities.action import Action, ActionType
 from domain.entities.query import Query
 from domain.entities.result import ActionResult, SuggestionResult
@@ -9,7 +10,8 @@ from domain.entities.schema import Schema, Column
 from domain.entities.suggestion import Suggestion
 from vos import DSN
 from .column_tetris import zero_values
-from .commands import IndexCommand
+from .commands.index import IndexCommand
+from .commands.materialized_view import MaterializedViewCommand
 from analyzer.analyzer import Analyzer
 from analyzer.command import Command
 from analyzer.node import Node
@@ -19,18 +21,20 @@ from analyzer.result import Result
 class PostgreSQLExecutor:
     _analyzer: Analyzer
     _pool: asyncpg.Pool
+    _queries: querydb.QueryDB
 
-    def __init__(self, pool: asyncpg.Pool) -> None:
+    def __init__(self, pool: asyncpg.Pool, queries: querydb.QueryDB) -> None:
         self._analyzer = Analyzer()
         self._pool = pool
+        self._queries = queries
 
     @classmethod
-    async def create(cls, dsn: DSN) -> "PostgreSQLExecutor":
+    async def create(cls, dsn: DSN, queries: querydb.QueryDB) -> "PostgreSQLExecutor":
         pool: asyncpg.Pool = await asyncpg.create_pool(
             dsn=f"postgresql://{dsn.user}:{dsn.password}@{dsn.host}:{dsn.port}/{dsn.database}",
         )
 
-        return cls(pool=pool)
+        return cls(pool=pool, queries=queries)
 
     """
     New suggestions might appear given a schema, depending on the RDBMS.
@@ -40,6 +44,7 @@ class PostgreSQLExecutor:
     - https://www.2ndquadrant.com/en/blog/on-rocks-and-sand/
     - https://stackoverflow.com/questions/2966524/calculating-and-saving-space-in-postgresql
     """
+
     async def prepare(self, schema: Schema) -> list[Suggestion]:
         return []
         # pg_types: dict[str, int] = {}
@@ -103,6 +108,7 @@ class PostgreSQLExecutor:
     New actions might appear given a query, depending on the RDBMS.
     In the PostgreSQL case, this is useful for applying the postgres loose index scan strategy.
     """
+
     async def analyze(self, query: Query) -> list[Action]:
         pass
 
@@ -118,12 +124,16 @@ class PostgreSQLExecutor:
     
     Sort the result by delta and return the best index to be created.
     """
+
     async def execute(self, suggestions: [Suggestion], schema: Schema) -> Result:
         commands: list[Command] = []
         for suggestion in suggestions:
-            if suggestion.action.type_ != ActionType.INDEX.value:
+            if suggestion.action.type_ == ActionType.INDEX.value:
+                commands.append(IndexCommand(suggestion=suggestion, conn=self._pool, queries=self._queries))
+            elif suggestion.action.type_ == ActionType.MATERIALIZED_VIEW.value:
+                commands.append(MaterializedViewCommand(suggestion=suggestion, conn=self._pool, queries=self._queries))
+            else:
                 continue
-            commands.append(IndexCommand(suggestion=suggestion, conn=self._pool, queries=schema.queries))
 
         return await self._analyzer.generate(actions=commands)
 

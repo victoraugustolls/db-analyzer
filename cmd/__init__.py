@@ -3,6 +3,7 @@ import json
 
 import uvloop
 
+from analyzer.result import fingerprint
 from config import settings
 from domain.entities.action import Action
 from domain.entities.plan import Plan
@@ -10,24 +11,37 @@ from domain.entities.query import Query
 from domain.entities.schema import Schema, Table, Column
 from domain.entities.suggestion import Suggestion
 from executors.postgresql import PostgreSQLExecutor
+from querydb import QueryDB
+from store import Store
 from vos import DSN
 
 
 async def main():
     (schema, suggestions) = parse_input()
 
-    executor = await PostgreSQLExecutor.create(parse_dsn(settings.executor, settings.password))
+    queries = QueryDB(queries=schema.queries)
+
+    dsn = parse_dsn(settings.executor, settings.password)
+
+    executor = await PostgreSQLExecutor.create(dsn, queries)
 
     new_suggestions = await executor.prepare(schema=schema)
 
     suggestions.extend(new_suggestions)
 
     result = await executor.execute(suggestions, schema)
-    for i, tree in enumerate(result.nodes):
-        print(f"Result #{i} - Total gains: {tree[len(tree)-1].gain} / Total cost: {tree[len(tree)-1].cost} / Delta: {tree[len(tree)-1].delta}")
-        for j, node in enumerate(tree):
-            print(f"\t- Action #{j}")
-            print(f"\t\t{node.description}")
+
+    store = await Store.create(dsn=dsn)
+    await store.save(queries=schema.queries, node=result)
+    # for i, tree in enumerate(result.nodes):
+    #     if len(tree) == 0:
+    #         continue
+    #     # print(f"Result #{i} - Total gains: {tree[len(tree)-1].gain} / Total cost: {tree[len(tree)-1].cost} / Delta: {tree[len(tree)-1].delta}")
+    #     # print(f"\tFingerprint: {fingerprint(tree)}")
+    #     print(f"Result: {i}")
+    #     for j, node in enumerate(tree):
+    #         print(f"\t- Action #{j}")
+    #         print(f"\tname: {node.name}, gain: {node.command_gain}, cost: {node.command_cost}, delta: {node.delta}")
 
 
 def parse_input() -> tuple[Schema, list[Suggestion]]:

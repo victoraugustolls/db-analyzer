@@ -1,5 +1,7 @@
 import typing as t
 
+from domain.entities.suggestion import Suggestion
+
 
 class Command(t.Protocol):
     # Apply returns a tuple, being:
@@ -12,5 +14,11 @@ class Command(t.Protocol):
     async def rollback(self) -> None:
         pass
 
+    def name(self) -> str:
+        pass
+
     def description(self) -> str:
+        pass
+
+    def suggestion(self) -> Suggestion:
         pass

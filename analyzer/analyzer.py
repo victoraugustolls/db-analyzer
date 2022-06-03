@@ -4,8 +4,11 @@ from .result import Result
 
 
 class _NoopCommand(Command):
-    async def apply(self) -> tuple[int, int]:
-        return 0, 0
+    def name(self) -> str:
+        return "noop"
+
+    async def apply(self) -> tuple[dict[str, float], float, float]:
+        return {}, 0, 0
 
     async def rollback(self) -> None:
         return None
@@ -13,32 +16,42 @@ class _NoopCommand(Command):
 
 class Analyzer:
     _leaves: list[Node]
+    _max_delta: float
+    _recommended: Node
 
     def __init__(self):
         self._leaves = []
+        self._max_delta = float("-inf")
 
-    async def generate(self, actions: list[Command]) -> Result:
-        initial_node = Node(command=_NoopCommand(), parent=None)
-        await self._mount(node=initial_node, actions=actions)
+    async def generate(self, actions: list[Command]) -> Node:
+        node = Node(command=_NoopCommand(), parent=None)
+        await self._mount(node=node, actions=actions)
 
-        # Order the leaves in descending order by delta.
-        # This means that leaves with higher cost reductions comes first on the list.
-        # self._leaves.sort(key=lambda x: (int(x.gain), -x.cost), reverse=True)
-        self._leaves.sort(key=lambda x: int(x.delta), reverse=True)
+        current = self._recommended
+        while current is not None:
+            current.recommended = True
+            current = current.parent
 
-        result = Result()
-        for leaf in self._leaves:
-            tree: list[Node] = []
-            current = leaf
-            while current.parent is not None:
-                tree.append(current)
-                current = current.parent
+        return node
 
-            # Reverse the tree to show the actions in the order they should be applied.
-            tree.reverse()
-            result.nodes.append(tree)
-
-        return result
+        # # Order the leaves in descending order by delta.
+        # # This means that leaves with higher cost reductions comes first on the list.
+        # # self._leaves.sort(key=lambda x: (int(x.gain), -x.cost), reverse=True)
+        # self._leaves.sort(key=lambda x: int(x.delta), reverse=True)
+        #
+        # result = Result()
+        # for leaf in self._leaves:
+        #     tree: list[Node] = []
+        #     current = leaf
+        #     while current.parent is not None:
+        #         tree.append(current)
+        #         current = current.parent
+        #
+        #     # Reverse the tree to show the actions in the order they should be applied.
+        #     tree.reverse()
+        #     result.nodes.append(tree)
+        #
+        # return result
 
     async def _mount(self, node: Node, actions: list[Command]) -> Node:
         cumulative_gain = 0
@@ -48,28 +61,33 @@ class Analyzer:
             cumulative_gain += gain
 
             # If gain > 0, then there was a reduction on total cost.
-            if gain > 0:
-                new_gain = node.gain + gain
-                new_cost = node.cost + cost
-                # New actions list, excluding the current one that was executed.
-                new_actions = actions.copy()
-                new_actions.pop(index)
+            # if gain > 0:
+            new_gain = node.gain + gain
+            new_cost = node.cost + cost
+            # New actions list, excluding the current one that was executed.
+            new_actions = actions.copy()
+            new_actions.pop(index)
 
-                # Recursively build the Node tree.
-                new_node = await self._mount(
-                    node=Node(
-                        command=action,
-                        command_queries_gain=queries_gain,
-                        command_gain=gain,
-                        command_cost=cost,
-                        queries_gain=node.queries_gain,
-                        gain=new_gain,
-                        cost=new_cost,
-                        parent=node,
-                    ),
-                    actions=new_actions,
-                )
-                node.add_child(child=new_node)
+            # Recursively build the Node tree.
+            new_node = await self._mount(
+                node=Node(
+                    command=action,
+                    command_queries_gain=queries_gain,
+                    command_gain=gain,
+                    command_cost=cost,
+                    queries_gain=node.queries_gain,
+                    gain=new_gain,
+                    cost=new_cost,
+                    parent=node,
+                ),
+                actions=new_actions,
+            )
+
+            if new_node.delta > self._max_delta:
+                self._max_delta = new_node.delta
+                self._recommended = new_node
+
+            node.add_child(child=new_node)
 
             # If the cost was higher than the gains, consider the current node as a leaf:
             if cost > gain:

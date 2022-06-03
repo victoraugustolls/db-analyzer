@@ -9,6 +9,12 @@ python = "^3.10"
 asyncpg = "^0.24.0"
 uvloop = "^0.16.0"
 dynaconf = "^3.1.7"
+sqlglot = "^2.1.0"
+sqlparse = "^0.4.2"
+sqloxide = "^0.1.15"
+mo-sql-parsing = "^8.156.22110"
+deepdiff = "^5.8.0"
+dictdiffer = "^0.9.0"
 
 [tool.poetry.dev-dependencies]
 black = "^21.9b0"

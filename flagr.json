@@ -504,6 +504,135 @@
         }
       },
       {
+        "id": "aggregated_membership",
+        "raw": "select resource_group_id, count(member)\nfrom resource_group_membership\njoin resource_group rg on resource_group_membership.resource_group_id = rg.id\nwhere resource_group_id > 500\nand rg.active is true\ngroup by resource_group_id\nhaving count(member) > 1",
+        "runs": 30,
+        "plan": {
+          "cost": 2771753.55,
+          "raw": [
+            {
+              "Plan": {
+                "Node Type": "Aggregate",
+                "Strategy": "Sorted",
+                "Partial Mode": "Finalize",
+                "Parallel Aware": false,
+                "Startup Cost": 2771547.06,
+                "Total Cost": 2771753.55,
+                "Plan Rows": 132,
+                "Plan Width": 12,
+                "Group Key": [
+                  "resource_group_membership.resource_group_id"
+                ],
+                "Filter": "(count(resource_group_membership.member) > 1)",
+                "Plans": [
+                  {
+                    "Node Type": "Gather Merge",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Startup Cost": 2771547.06,
+                    "Total Cost": 2771736.72,
+                    "Plan Rows": 1584,
+                    "Plan Width": 12,
+                    "Workers Planned": 4,
+                    "Plans": [
+                      {
+                        "Node Type": "Sort",
+                        "Parent Relationship": "Outer",
+                        "Parallel Aware": false,
+                        "Startup Cost": 2770547.01,
+                        "Total Cost": 2770548.00,
+                        "Plan Rows": 396,
+                        "Plan Width": 12,
+                        "Sort Key": [
+                          "resource_group_membership.resource_group_id"
+                        ],
+                        "Plans": [
+                          {
+                            "Node Type": "Aggregate",
+                            "Strategy": "Hashed",
+                            "Partial Mode": "Partial",
+                            "Parent Relationship": "Outer",
+                            "Parallel Aware": false,
+                            "Startup Cost": 2770525.96,
+                            "Total Cost": 2770529.92,
+                            "Plan Rows": 396,
+                            "Plan Width": 12,
+                            "Group Key": [
+                              "resource_group_membership.resource_group_id"
+                            ],
+                            "Planned Partitions": 0,
+                            "Plans": [
+                              {
+                                "Node Type": "Hash Join",
+                                "Parent Relationship": "Outer",
+                                "Parallel Aware": false,
+                                "Join Type": "Inner",
+                                "Startup Cost": 16.00,
+                                "Total Cost": 2511541.92,
+                                "Plan Rows": 51796808,
+                                "Plan Width": 10,
+                                "Inner Unique": true,
+                                "Hash Cond": "(resource_group_membership.resource_group_id = rg.id)",
+                                "Plans": [
+                                  {
+                                    "Node Type": "Seq Scan",
+                                    "Parent Relationship": "Outer",
+                                    "Parallel Aware": true,
+                                    "Relation Name": "resource_group_membership",
+                                    "Alias": "resource_group_membership",
+                                    "Startup Cost": 0.00,
+                                    "Total Cost": 2374118.70,
+                                    "Plan Rows": 51796808,
+                                    "Plan Width": 10,
+                                    "Filter": "(resource_group_id > 500)"
+                                  },
+                                  {
+                                    "Node Type": "Hash",
+                                    "Parent Relationship": "Inner",
+                                    "Parallel Aware": false,
+                                    "Startup Cost": 11.00,
+                                    "Total Cost": 11.00,
+                                    "Plan Rows": 400,
+                                    "Plan Width": 4,
+                                    "Plans": [
+                                      {
+                                        "Node Type": "Seq Scan",
+                                        "Parent Relationship": "Outer",
+                                        "Parallel Aware": false,
+                                        "Relation Name": "resource_group",
+                                        "Alias": "rg",
+                                        "Startup Cost": 0.00,
+                                        "Total Cost": 11.00,
+                                        "Plan Rows": 400,
+                                        "Plan Width": 4,
+                                        "Filter": "(active IS TRUE)"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "JIT": {
+                "Functions": 20,
+                "Options": {
+                  "Inlining": true,
+                  "Optimization": true,
+                  "Expressions": true,
+                  "Deforming": true
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
         "id": "insert_resource_group_membership",
         "raw": "insert into resource_group_membership (resource_group_id, member, created_by, updated_by) values (1213, '1000', 'sql', 'sql');",
         "runs": 500,
@@ -587,12 +716,32 @@
     },
     {
       "action": {
-        "name": "idx_resource_group_member",
+        "name": "idx_resource_group_active_member",
         "type": "index",
         "command": "create index on resource_group_membership(member) where active is true;"
       },
       "queries": [
         "active_resource_groups_from_member"
+      ]
+    },
+    {
+      "action": {
+        "name": "idx_resource_group_resource_group_id",
+        "type": "index",
+        "command": "create index on resource_group_membership(resource_group_id);"
+      },
+      "queries": [
+        "aggregated_membership"
+      ]
+    },
+    {
+      "action": {
+        "name": "mv_aggregated_resources",
+        "type": "materialized_view",
+        "command": "create materialized view mv as\nselect resource_group_id, count(member)\nfrom resource_group_membership\njoin resource_group rg on resource_group_membership.resource_group_id = rg.id\nwhere rg.active is true\ngroup by resource_group_id\nhaving count(member) > 1\n;"
+      },
+      "queries": [
+        "aggregated_membership"
       ]
     }
   ]

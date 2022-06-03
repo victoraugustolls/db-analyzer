@@ -1,4 +1,5 @@
 import typing as t
+import uuid
 from dataclasses import dataclass, field
 
 from .command import Command
@@ -9,12 +10,14 @@ class Node:
     command: Command
     parent: t.Optional["Node"]
     children: list["Node"] = field(default_factory=list)
+    uid: uuid.UUID = field(default_factory=uuid.uuid4)
     gain: float = 0
     cost: float = 0
     queries_gain: dict[str, float] = field(default_factory=dict)
     command_gain: float = 0
     command_cost: float = 0
     command_queries_gain: dict[str, float] = field(default_factory=dict)
+    recommended: bool = False
 
     def __post_init__(self):
         for query, gain in self.command_queries_gain.items():
@@ -23,6 +26,13 @@ class Node:
 
     def add_child(self, child: "Node") -> None:
         self.children.append(child)
+
+    @property
+    def name(self) -> str:
+        return self.command.name()
+
+    def fingerprint(self) -> str:
+        return f"{self.name}|{self.command_gain}|{self.command_cost}"
 
     @property
     def delta(self) -> float:
