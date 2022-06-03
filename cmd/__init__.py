@@ -33,15 +33,6 @@ async def main():
 
     store = await Store.create(dsn=dsn)
     await store.save(queries=schema.queries, node=result)
-    # for i, tree in enumerate(result.nodes):
-    #     if len(tree) == 0:
-    #         continue
-    #     # print(f"Result #{i} - Total gains: {tree[len(tree)-1].gain} / Total cost: {tree[len(tree)-1].cost} / Delta: {tree[len(tree)-1].delta}")
-    #     # print(f"\tFingerprint: {fingerprint(tree)}")
-    #     print(f"Result: {i}")
-    #     for j, node in enumerate(tree):
-    #         print(f"\t- Action #{j}")
-    #         print(f"\tname: {node.name}, gain: {node.command_gain}, cost: {node.command_cost}, delta: {node.delta}")
 
 
 def parse_input() -> tuple[Schema, list[Suggestion]]:

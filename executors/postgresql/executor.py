@@ -15,7 +15,6 @@ from .commands.materialized_view import MaterializedViewCommand
 from analyzer.analyzer import Analyzer
 from analyzer.command import Command
 from analyzer.node import Node
-from analyzer.result import Result
 
 
 class PostgreSQLExecutor:
@@ -44,7 +43,6 @@ class PostgreSQLExecutor:
     - https://www.2ndquadrant.com/en/blog/on-rocks-and-sand/
     - https://stackoverflow.com/questions/2966524/calculating-and-saving-space-in-postgresql
     """
-
     async def prepare(self, schema: Schema) -> list[Suggestion]:
         return []
         # pg_types: dict[str, int] = {}
@@ -108,7 +106,6 @@ class PostgreSQLExecutor:
     New actions might appear given a query, depending on the RDBMS.
     In the PostgreSQL case, this is useful for applying the postgres loose index scan strategy.
     """
-
     async def analyze(self, query: Query) -> list[Action]:
         pass
 
@@ -124,8 +121,7 @@ class PostgreSQLExecutor:
     
     Sort the result by delta and return the best index to be created.
     """
-
-    async def execute(self, suggestions: [Suggestion], schema: Schema) -> Result:
+    async def execute(self, suggestions: [Suggestion], schema: Schema) -> Node:
         commands: list[Command] = []
         for suggestion in suggestions:
             if suggestion.action.type_ == ActionType.INDEX.value:
@@ -137,51 +133,6 @@ class PostgreSQLExecutor:
 
         return await self._analyzer.generate(actions=commands)
 
-        # results: list[ActionResult] = []
-        #
-        # for suggestion in suggestions:
-        #     action = suggestion.action
-        #     # We only accept index actions for now
-        #     match action.type_:
-        #         case ActionType.INDEX.value:
-        #             result = await self._process_index_action(action=action, queries=suggestion.queries)
-        #         case ActionType.COLUMN_TETRIS.value:
-        #             result = await self._process_column_tetris_action(action=action, query=suggestion.queries[0])
-        #         case _:
-        #             continue
-        #
-        #     results.append(result)
-        #
-        # results.sort(key=lambda r: r.delta, reverse=True)
-        # return SuggestionResult(actions=results, query=[], message=results[0].message)
-
-    async def _process_index_action(self, queries: [Query], action: Action) -> ActionResult:
-        total_cost = 0
-        for query in queries:
-            total_cost += query.plan.cost
-
-        new_total_cost = 0
-
-        await self._pool.execute(query=self._format_hypothetical_index(action.command))
-
-        for query in queries:
-            record: asyncpg.Record = await self._pool.fetchval(query=self._format_explain(query.raw))
-            plan = json.loads(record)
-            cost = plan[0]["Plan"]["Total Cost"]
-            new_total_cost += cost
-            self._db.add_query_action(query=query.id, action=action)
-
-        await self._pool.execute(query="select hypopg_reset();")
-
-        delta = total_cost - new_total_cost
-
-        message = f"The query cost can be reduced by {delta}, " \
-                  f"from {total_cost} to {new_total_cost}, by creating the index '{action.name}'."
-
-        self._db.add_action(Result(action=action, queries={q for q in queries}, delta=delta))
-
-        return ActionResult(action=action, new_cost=new_total_cost, old_cost=total_cost, message=message)
-
     async def _process_column_tetris_action(self, action: Action, query: Query) -> ActionResult:
         record: asyncpg.Record = await self._pool.fetchrow(query=action.command)
 
@@ -192,13 +143,3 @@ class PostgreSQLExecutor:
                   f"from {old_size} to {new_size}, by reordering the columns to: {query.raw}."
 
         return ActionResult(action=action, new_cost=new_size, old_cost=old_size, message=message)
-
-    @staticmethod
-    def _format_hypothetical_index(query: str) -> str:
-        query = query.replace("'", "''").replace(";", "")
-        return f"select * from hypopg_create_index('{query}');"
-
-    @staticmethod
-    def _format_explain(query: str) -> str:
-        query = query.replace(";", "")
-        return f"explain (format json) {query};"

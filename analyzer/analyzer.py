@@ -1,6 +1,5 @@
 from .command import Command
 from .node import Node
-from .result import Result
 
 
 class _NoopCommand(Command):
