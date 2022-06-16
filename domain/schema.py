@@ -1,22 +1,22 @@
-from dataclasses import dataclass
+import dataclasses
 
-from domain.entities.query import Query
+from .query import Query
 
 
-@dataclass
+@dataclasses.dataclass
 class Column:
     name: str
     type: str
     nullable: str
 
 
-@dataclass
+@dataclasses.dataclass
 class Table:
     name: str
     columns: list[Column]
 
 
-@dataclass
+@dataclasses.dataclass
 class Schema:
     tables: list[Table]
     queries: list[Query]

@@ -1,5 +1,5 @@
+import dataclasses
 import enum
-from dataclasses import dataclass
 
 
 class ActionType(enum.Enum):
@@ -10,8 +10,9 @@ class ActionType(enum.Enum):
     COLUMN_TETRIS = "column_tetris"
 
 
-@dataclass
+@dataclasses.dataclass
 class Action:
+    # name must be unique
     name: str
     type_: str
     command: str

@@ -1,23 +1,23 @@
-from dataclasses import dataclass, field
-from enum import Enum
+import dataclasses
+import enum
 
 from .plan import Plan
 
 
-class QueryType(Enum):
+class QueryType(enum.Enum):
     INSERT = "INSERT"
     SELECT = "SELECT"
     UPDATE = "UPDATE"
     DELETE = "DELETE"
 
 
-@dataclass
+@dataclasses.dataclass
 class Query:
     id: str
     raw: str
     runs: int
     plan: Plan | None
-    _type: QueryType = field(init=False)
+    _type: QueryType = dataclasses.field(init=False)
     table: str = ""
 
     def __post_init__(self):

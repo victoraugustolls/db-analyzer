@@ -2,14 +2,14 @@ import json
 
 import asyncpg
 
+import analyzer
 import querydb
-from analyzer.command import Command
-from domain.entities.suggestion import Suggestion
+import domain
 
 
 # noinspection SqlNoDataSourceInspection,SqlDialectInspection
-class IndexCommand(Command):
-    _suggestion: Suggestion
+class Index(analyzer.Command):
+    _suggestion: domain.Suggestion
     _conn: asyncpg.pool.Pool
 
     _queries: querydb.QueryDB
@@ -22,7 +22,7 @@ class IndexCommand(Command):
     _hypo_index_id: int | None = None
     _create_cost: float | None = None
 
-    def __init__(self, suggestion: Suggestion, queries: querydb.QueryDB, conn: asyncpg.pool.Pool):
+    def __init__(self, suggestion: domain.Suggestion, queries: querydb.QueryDB, conn: asyncpg.pool.Pool):
         self._suggestion = suggestion
         self._conn = conn
         self._queries = queries
@@ -35,7 +35,7 @@ class IndexCommand(Command):
     def name(self) -> str:
         return self._suggestion.action.name
 
-    def suggestion(self) -> Suggestion:
+    def suggestion(self) -> domain.Suggestion:
         return self._suggestion
 
     # Creates the hypothetical index and returns the cumulative gains

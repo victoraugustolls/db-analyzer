@@ -1,6 +1,6 @@
 import typing as t
 
-from domain.entities.suggestion import Suggestion
+import domain
 
 
 class Command(t.Protocol):
@@ -20,5 +20,16 @@ class Command(t.Protocol):
     def description(self) -> str:
         pass
 
-    def suggestion(self) -> Suggestion:
+    def suggestion(self) -> domain.Suggestion:
         pass
+
+
+class Noop(Command):
+    def name(self) -> str:
+        return "noop"
+
+    async def apply(self) -> tuple[dict[str, float], float, float]:
+        return {}, 0, 0
+
+    async def rollback(self) -> None:
+        return None

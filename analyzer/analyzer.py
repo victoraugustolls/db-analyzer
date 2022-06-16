@@ -1,16 +1,5 @@
-from .command import Command
+from .command import Command, Noop
 from .node import Node
-
-
-class _NoopCommand(Command):
-    def name(self) -> str:
-        return "noop"
-
-    async def apply(self) -> tuple[dict[str, float], float, float]:
-        return {}, 0, 0
-
-    async def rollback(self) -> None:
-        return None
 
 
 class Analyzer:
@@ -23,7 +12,7 @@ class Analyzer:
         self._max_delta = float("-inf")
 
     async def generate(self, actions: list[Command]) -> Node:
-        node = Node(command=_NoopCommand(), parent=None)
+        node = Node(command=Noop(), parent=None)
         await self._mount(node=node, actions=actions)
 
         current = self._recommended
@@ -34,16 +23,9 @@ class Analyzer:
         return node
 
     async def _mount(self, node: Node, actions: list[Command]) -> Node:
-        cumulative_gain = 0
-
         for index, action in enumerate(actions):
             queries_gain, gain, cost = await action.apply()
-            cumulative_gain += gain
 
-            # If gain > 0, then there was a reduction on total cost.
-            # if gain > 0:
-            new_gain = node.gain + gain
-            new_cost = node.cost + cost
             # New actions list, excluding the current one that was executed.
             new_actions = actions.copy()
             new_actions.pop(index)
@@ -55,9 +37,6 @@ class Analyzer:
                     command_queries_gain=queries_gain,
                     command_gain=gain,
                     command_cost=cost,
-                    queries_gain=node.queries_gain,
-                    gain=new_gain,
-                    cost=new_cost,
                     parent=node,
                 ),
                 actions=new_actions,

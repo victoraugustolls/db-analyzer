@@ -4,16 +4,15 @@ import re
 import asyncpg
 import mo_sql_parsing
 
+import analyzer
+import domain
 import querydb
-from analyzer.command import Command
-from domain.entities.query import Query
-from domain.entities.suggestion import Suggestion
 
 
 # noinspection SqlNoDataSourceInspection,SqlDialectInspection
-class MaterializedViewCommand(Command):
-    _original: Query
-    _suggestion: Suggestion
+class MaterializedView(analyzer.Command):
+    _original: domain.Query
+    _suggestion: domain.Suggestion
     _conn: asyncpg.pool.Pool
 
     _queries: querydb.QueryDB
@@ -24,7 +23,7 @@ class MaterializedViewCommand(Command):
     _update_cost_sql: str
     _create_cost: float | None = None
 
-    def __init__(self, suggestion: Suggestion, queries: querydb.QueryDB, conn: asyncpg.pool.Pool):
+    def __init__(self, suggestion: domain.Suggestion, queries: querydb.QueryDB, conn: asyncpg.pool.Pool):
         self._original = suggestion.queries[0]
         self._suggestion = suggestion
         self._conn = conn
@@ -34,7 +33,7 @@ class MaterializedViewCommand(Command):
     def name(self) -> str:
         return self._suggestion.action.name
 
-    def suggestion(self) -> Suggestion:
+    def suggestion(self) -> domain.Suggestion:
         return self._suggestion
 
     # Creates the hypothetical index and returns the cumulative gains
@@ -49,7 +48,7 @@ class MaterializedViewCommand(Command):
         uid = self._suggestion.queries[0].id
 
         # Replace query reference
-        self._queries.replace(uid, Query(
+        self._queries.replace(uid, domain.Query(
             id=self._suggestion.queries[0].id,
             raw="select 1",
             plan=None,
