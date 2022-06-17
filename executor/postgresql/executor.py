@@ -5,10 +5,10 @@ import config
 import domain
 import querydb
 from . import _commands
+from ..executor import Executor
 
 
-# TODO: refactor to be a protocol
-class PostgreSQLExecutor:
+class PostgreSQL(Executor):
     _analyzer: analyzer.Analyzer
     _pool: asyncpg.Pool
     _queries: querydb.QueryDB
@@ -19,7 +19,7 @@ class PostgreSQLExecutor:
         self._queries = queries
 
     @classmethod
-    async def create(cls, dsn: config.DSN, queries: querydb.QueryDB) -> "PostgreSQLExecutor":
+    async def create(cls, dsn: config.DSN, queries: querydb.QueryDB) -> "PostgreSQL":
         pool: asyncpg.Pool = await asyncpg.create_pool(
             dsn=f"postgresql://{dsn.user}:{dsn.password}@{dsn.host}:{dsn.port}/{dsn.database}",
         )
@@ -57,14 +57,14 @@ class PostgreSQLExecutor:
     Sort the result by delta and return the best index to be created.
     """
     async def execute(self, suggestions: [domain.Suggestion], schema: domain.Schema) -> analyzer.Node:
-        commands: list[analyzer.Command] = []
+        cmds: list[analyzer.Command] = []
         for suggestion in suggestions:
             # TODO: refactor to use as enum
             if suggestion.action.type_ == domain.ActionType.INDEX.value:
-                commands.append(_commands.Index(suggestion=suggestion, conn=self._pool, queries=self._queries))
+                cmds.append(_commands.Index(suggestion=suggestion, conn=self._pool, queries=self._queries))
             elif suggestion.action.type_ == domain.ActionType.MATERIALIZED_VIEW.value:
-                commands.append(_commands.MaterializedView(suggestion=suggestion, conn=self._pool, queries=self._queries))
+                cmds.append(_commands.MaterializedView(suggestion=suggestion, conn=self._pool, queries=self._queries))
             else:
                 continue
 
-        return await self._analyzer.generate(actions=commands)
+        return await self._analyzer.generate(actions=cmds)

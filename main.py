@@ -5,7 +5,7 @@ import uvloop
 
 import config
 import domain
-import executors.postgresql as executors
+import executor
 import querydb
 import store
 
@@ -17,13 +17,13 @@ async def main():
 
     dsn = parse_dsn(config.settings.executor, config.settings.password)
 
-    executor = await executors.PostgreSQLExecutor.create(dsn, queries)
+    exect = await executor.new(rdbms=config.settings.executor.rdbms, dsn=dsn, queries=queries)
 
-    new_suggestions = await executor.prepare(schema=schema)
+    new_suggestions = await exect.prepare(schema=schema)
 
     suggestions.extend(new_suggestions)
 
-    result = await executor.execute(suggestions, schema)
+    result = await exect.execute(suggestions=suggestions, schema=schema)
 
     st = await store.Store.create(dsn=dsn)
     await st.save(queries=schema.queries, node=result)
@@ -33,6 +33,7 @@ def parse_input() -> tuple[domain.Schema, list[domain.Suggestion]]:
     with open("flagr.json") as file:
         data = json.load(file)
 
+    # TODO: create a parser
     schema = domain.Schema(
         tables=[domain.Table(
             name=table["name"],
