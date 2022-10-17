@@ -1,0 +1,556 @@
+{
+  "schema": {
+    "tables": [
+      {
+        "name": "public.allow_list",
+        "columns": [
+          {
+            "name": "segment_id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "flag_id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "resource",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "variant_id",
+            "type": "int4",
+            "nullable": "YES"
+          }
+        ]
+      },
+      {
+        "name": "public.flag",
+        "columns": [
+          {
+            "name": "active",
+            "type": "bool",
+            "nullable": "NO"
+          },
+          {
+            "name": "salt",
+            "type": "uuid",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "description",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "name",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "public_id",
+            "type": "uuid",
+            "nullable": "NO"
+          }
+        ]
+      },
+      {
+        "name": "public.resource_group",
+        "columns": [
+          {
+            "name": "id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "public_id",
+            "type": "uuid",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "active",
+            "type": "bool",
+            "nullable": "NO"
+          },
+          {
+            "name": "name",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_by",
+            "type": "text",
+            "nullable": "NO"
+          }
+        ]
+      },
+      {
+        "name": "public.resource_group_membership",
+        "columns": [
+          {
+            "name": "created_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "active",
+            "type": "bool",
+            "nullable": "NO"
+          },
+          {
+            "name": "resource_group_id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "member",
+            "type": "text",
+            "nullable": "NO"
+          }
+        ]
+      },
+      {
+        "name": "public.restriction",
+        "columns": [
+          {
+            "name": "segment_id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "type",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "value",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "operator",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "property",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "public_id",
+            "type": "uuid",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "id",
+            "type": "int4",
+            "nullable": "NO"
+          }
+        ]
+      },
+      {
+        "name": "public.restriction_type_operator",
+        "columns": [
+          {
+            "name": "operator",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "type",
+            "type": "text",
+            "nullable": "NO"
+          }
+        ]
+      },
+      {
+        "name": "public.segment",
+        "columns": [
+          {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "public_id",
+            "type": "uuid",
+            "nullable": "NO"
+          },
+          {
+            "name": "salt",
+            "type": "uuid",
+            "nullable": "NO"
+          },
+          {
+            "name": "rollout",
+            "type": "int2",
+            "nullable": "NO"
+          },
+          {
+            "name": "priority",
+            "type": "int2",
+            "nullable": "NO"
+          },
+          {
+            "name": "flag_id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "description",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "name",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "active",
+            "type": "bool",
+            "nullable": "NO"
+          }
+        ]
+      },
+      {
+        "name": "public.segment_resource_group",
+        "columns": [
+          {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "resource_group_id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "segment_id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "active",
+            "type": "bool",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          }
+        ]
+      },
+      {
+        "name": "public.variant",
+        "columns": [
+          {
+            "name": "public_id",
+            "type": "uuid",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "nullable": "NO"
+          },
+          {
+            "name": "active",
+            "type": "bool",
+            "nullable": "NO"
+          },
+          {
+            "name": "id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "name",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "segment_id",
+            "type": "int4",
+            "nullable": "NO"
+          },
+          {
+            "name": "percent",
+            "type": "int2",
+            "nullable": "NO"
+          },
+          {
+            "name": "metadata",
+            "type": "jsonb",
+            "nullable": "NO"
+          },
+          {
+            "name": "updated_by",
+            "type": "text",
+            "nullable": "NO"
+          },
+          {
+            "name": "created_by",
+            "type": "text",
+            "nullable": "NO"
+          }
+        ]
+      }
+    ],
+    "queries": [
+      {
+        "id": "tpch_q1",
+        "raw": "select l_returnflag,\n       l_linestatus,\n       sum(l_quantity) as sum_qty,\n       sum(l_extendedprice) as sum_base_price,\n       sum(l_extendedprice * (1 - l_discount)) as sum_discprice,\n       sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,\n       avg(l_quantity) as avg_qty,\n       avg(l_extendedprice) as avg_price,\n       avg(l_discount) as avg_disc,\n       count(*) as count_order\nfrom lineitem\nwhere l_shipdate <= date '1998-12-01' - interval '87 days'\ngroup by l_returnflag, l_linestatus\norder by l_returnflag, l_linestatus;",
+        "runs": 100,
+        "plan": {
+          "cost": 2300884.07,
+          "raw": []
+        }
+      },
+      {
+        "id": "tpch_q1_last_week",
+        "raw": "select l_returnflag,\n       l_linestatus,\n       sum(l_quantity) as sum_qty,\n       sum(l_extendedprice) as sum_base_price,\n       sum(l_extendedprice * (1 - l_discount)) as sum_discprice,\n       sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,\n       avg(l_quantity) as avg_qty,\n       avg(l_extendedprice) as avg_price,\n       avg(l_discount) as avg_disc,\n       count(*) as count_order\nfrom lineitem\nwhere l_shipdate > date '1998-12-01' - interval '1 week'\ngroup by l_returnflag, l_linestatus\norder by l_returnflag, l_linestatus;",
+        "runs": 1000,
+        "plan": {
+          "cost": 1438215.34,
+          "raw": []
+        }
+      },
+      {
+        "id": "tpch_q1_last_month",
+        "raw": "select l_returnflag,\n       l_linestatus,\n       sum(l_quantity) as sum_qty,\n       sum(l_extendedprice) as sum_base_price,\n       sum(l_extendedprice * (1 - l_discount)) as sum_discprice,\n       sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,\n       avg(l_quantity) as avg_qty,\n       avg(l_extendedprice) as avg_price,\n       avg(l_discount) as avg_disc,\n       count(*) as count_order\nfrom lineitem\nwhere l_shipdate > date '1998-12-01' - interval '1 month'\ngroup by l_returnflag, l_linestatus\norder by l_returnflag, l_linestatus;",
+        "runs": 500,
+        "plan": {
+          "cost": 1438215.34,
+          "raw": []
+        }
+      },
+      {
+        "id": "tpch_q3.1",
+        "raw": "select l_orderkey,\n       sum(l_extendedprice + (1 - l_discount)) as revenue,\n       o_orderdate,\n       o_shippriority\nfrom customer, orders, lineitem\nwhere c_mktsegment = 'BUILDING'\n  and c_custkey = o_custkey\n  and l_orderkey = o_orderkey\n  and o_orderdate < date '1995-03-15'\n  and l_shipdate > date '1995-03-15'\ngroup by l_orderkey, o_orderdate, o_shippriority\norder by revenue desc, o_orderdate;",
+        "runs": 150,
+        "plan": {
+          "cost": 3234558.49,
+          "raw": []
+        }
+      },
+      {
+        "id": "tpch_q3.2",
+        "raw": "select l_orderkey,\n       sum(l_extendedprice + (1 - l_discount)) as revenue,\n       o_orderdate,\n       o_shippriority\n from customer, orders, lineitem\nwhere c_mktsegment = 'AUTOMOBILE'\n  and c_custkey = o_custkey\n  and l_orderkey = o_orderkey\n  and o_orderdate < date '1995-03-30'\n  and l_shipdate > date '1995-03-30'\ngroup by l_orderkey, o_orderdate, o_shippriority\norder by revenue desc, o_orderdate;",
+        "runs": 75,
+        "plan": {
+          "cost": 3217470.61,
+          "raw": []
+        }
+      },
+      {
+        "id": "tpch_q4",
+        "raw": "select o_orderpriority,\n       count(*) as order_count\n from orders, lineitem\nwhere o_orderdate >= date '1993-07-01'\n  and o_orderdate < date '1993-07-01' + interval '3' month\n  and l_orderkey = o_orderkey\n  and l_commitdate < l_receiptdate\ngroup by o_orderpriority\norder by o_orderpriority;",
+        "runs": 40,
+        "plan": {
+          "cost": 1897689.86,
+          "raw": []
+        }
+      },
+      {
+        "id": "tpch_q5",
+        "raw": "select n_name,\n       sum(l_extendedprice * (1 - l_discount)) as revenue\nfrom customer, orders, lineitem, supplier, nation, region\nwhere c_custkey = o_custkey\n  and l_orderkey = o_orderkey\n  and l_suppkey = s_suppkey\n  and c_nationkey = s_nationkey\n  and s_nationkey = n_nationkey\n  and n_regionkey = r_regionkey and r_name = 'ASIA'\n  and o_orderdate >= date '1994-01-01'\n  and o_orderdate < date '1994-01-01' + interval '1' year\ngroup by n_name\norder by revenue desc;",
+        "runs": 40,
+        "plan": {
+          "cost": 2073112.60,
+          "raw": []
+        }
+      },
+      {
+        "id": "tpch_q8",
+        "raw": "select sum(\n        case when n_name = 'BRAZIL'\n            then l_extendedprice * (1 - l_discount)\n            else 0\n        end\n    ) / sum((l_extendedprice * (1 - l_discount))) as mkt_share,\n    date_part('year', o_orderdate) as o_year\nfrom part, supplier, lineitem, orders, customer, nation, region\nwhere p_partkey = l_partkey\nand s_suppkey = l_suppkey\nand l_orderkey = o_orderkey\nand o_custkey = c_custkey\nand c_nationkey = n_nationkey\nand n_regionkey = r_regionkey\nand r_name = 'AMERICA'\nand o_orderdate between date '1995-01-01' and date '1996-12-31'\nand p_type = 'ECONOMY ANODIZED STEEL'\ngroup by o_year\norder by o_year;",
+        "runs": 75,
+        "plan": {
+          "cost": 1956813.68,
+          "raw": []
+        }
+      }
+    ]
+  },
+  "suggestions": [
+    {
+      "action": {
+        "name": "hyp_l_partkey",
+        "type": "index",
+        "command": "create index hyp_l_partkey on lineitem (l_partkey);"
+      },
+      "queries": []
+    },
+    {
+      "action": {
+        "name": "hyp_l_shipdate",
+        "type": "index",
+        "command": "create index hyp_l_shipdate on lineitem (l_shipdate);"
+      },
+      "queries": []
+    },
+    {
+      "action": {
+        "name": "hyp_p_type",
+        "type": "index",
+        "command": "create index hyp_p_type on part (p_type);"
+      },
+      "queries": []
+    },
+    {
+      "action": {
+        "name": "hyp_l_partkey_l_orderkey",
+        "type": "index",
+        "command": "create index hyp_l_partkey_l_orderkey on lineitem (l_partkey, l_orderkey);"
+      },
+      "queries": []
+    },
+    {
+      "action": {
+        "name": "hyp_l_shipdate_l_orderkey",
+        "type": "index",
+        "command": "create index hyp_l_shipdate_l_orderkey on lineitem (l_shipdate, l_orderkey);"
+      },
+      "queries": []
+    },
+    {
+      "action": {
+        "name": "hyp_p_type_p_partkey",
+        "type": "index",
+        "command": "create index hyp_p_type_p_partkey on part (p_type, p_partkey);"
+      },
+      "queries": []
+    },
+    {
+      "action": {
+        "name": "hyp_p_part_type_eas",
+        "type": "index",
+        "command": "create index hyp_p_part_type_eas on part (p_type) where p_type = 'ECONOMY ANODIZED STEEL';"
+      },
+      "queries": ["tpch_q8"]
+    },
+    {
+      "action": {
+        "name": "mv_aggregated_resources",
+        "type": "materialized_view",
+        "command": "create materialized view mv as\nselect l_orderkey,\n       sum(l_extendedprice + (1 - l_discount)) as revenue,\n       o_orderdate,\n       o_shippriority,\n       c_mktsegment,\n       l_shipdate\n  from customer, orders, lineitem\n where c_custkey = o_custkey and\n       l_orderkey = o_orderkey\ngroup by l_orderkey, o_orderdate, o_shippriority, c_mktsegment, l_shipdate\norder by revenue desc, o_orderdate;"
+      },
+      "queries": ["tpch_q3.1"]
+    }
+  ]
+}

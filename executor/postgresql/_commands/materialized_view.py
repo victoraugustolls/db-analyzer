@@ -40,10 +40,13 @@ class MaterializedView(analyzer.Command):
     # by executing the queries affected by it with the `explain` clause.
     async def apply(self) -> tuple[dict[str, float], float, float]:
         # Get queries total cost
+        await self._conn.execute("set hypopg.enabled = off;")
         old_cost = await self._old_query_cost()
         new_cost = await self._new_query_cost()
+        await self._conn.execute("set hypopg.enabled = on;")
 
         gain = old_cost - new_cost
+        cost = await self._creation_cost()
 
         uid = self._suggestion.queries[0].id
 
@@ -55,7 +58,7 @@ class MaterializedView(analyzer.Command):
             runs=self._suggestion.queries[0].runs,
         ))
 
-        return {uid: gain}, gain, 1
+        return {uid: gain}, gain, cost
 
     # Drops the created hypothetical index. *MUST* be called after `apply`.
     async def rollback(self) -> None:
@@ -78,6 +81,12 @@ class MaterializedView(analyzer.Command):
         record: asyncpg.Record = await self._conn.fetchval(query)
         plan = json.loads(record)
         return self._suggestion.queries[0].runs*(plan[0]["Plan"]["Total Cost"]-plan[0]["Plan"]["Startup Cost"])
+
+    async def _creation_cost(self) -> float:
+        query = self._format_explain(self._apply_sql)
+        record: asyncpg.Record = await self._conn.fetchval(query)
+        plan = json.loads(record)
+        return plan[0]["Plan"]["Startup Cost"]
 
     def _format_hypothetical_view(self, query: str) -> str:
         query = query.replace("'", "''").replace(";", "")

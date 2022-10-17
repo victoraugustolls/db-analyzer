@@ -13,6 +13,9 @@ class QueryDB:
             for query in queries
         }
 
+    def queries(self) -> list[domain.Query]:
+        return list(self._queries.values())
+
     def replace(self, uid: str, query: domain.Query) -> None:
         self._queries[uid] = query
 

@@ -3,4 +3,4 @@ rdbms = "postgres"
 user = "postgres"
 host = "127.0.0.1"
 port = 63333
-database = "dev"
+database = "tpch"

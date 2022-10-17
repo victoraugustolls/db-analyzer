@@ -17,7 +17,8 @@ class Store:
     @classmethod
     async def create(cls, dsn: config.DSN) -> "Store":
         pool: asyncpg.Pool = await asyncpg.create_pool(
-            dsn=f"postgresql://{dsn.user}:{dsn.password}@{dsn.host}:{dsn.port}/{dsn.database}?search_path=masters",
+            dsn=f"postgresql://{dsn.user}:{dsn.password}@{dsn.host}:{dsn.port}/{dsn.database}",
+            # dsn=f"postgresql://{dsn.user}:{dsn.password}@{dsn.host}:{dsn.port}/{dsn.database}?search_path=masters",
         )
 
         return cls(pool=pool)
@@ -52,7 +53,7 @@ class Store:
 
         conn: asyncpg.Connection = await self._pool.acquire()
         async with conn.transaction():
-            await conn.execute("SET CONSTRAINTS masters.node_parent_fkey DEFERRED;")
+            await conn.execute("SET CONSTRAINTS node_parent_fkey DEFERRED;")
             await conn.execute("TRUNCATE node_query_result, node, action, query;")
             await conn.executemany(inserts.query, queries)
             await conn.executemany(inserts.action, actions)

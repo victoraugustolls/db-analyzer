@@ -15,6 +15,12 @@ sqloxide = "^0.1.15"
 mo-sql-parsing = "^8.156.22110"
 deepdiff = "^5.8.0"
 dictdiffer = "^0.9.0"
+pyodbc = "^4.0.32"
+aioodbc = "^0.3.3"
+PyJWT = "^2.4.0"
+cryptography = "^37.0.4"
+python-jose = "^3.3.0"
+esphome = "^2022.6.2"
 
 [tool.poetry.dev-dependencies]
 black = "^21.9b0"

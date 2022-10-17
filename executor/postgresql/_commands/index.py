@@ -76,7 +76,8 @@ class Index(analyzer.Command):
     async def _extract_queries_cost(self) -> tuple[dict[str, float], float]:
         cost = 0
         queries_cost: dict[str, float] = {}
-        for query in self._suggestion.queries:
+        # TODO: run all queries
+        for query in self._queries.queries():
             record: asyncpg.Record = await self._conn.fetchval(self._format_explain(query.raw))
             plan = json.loads(record)
             query_cost = query.runs*plan[0]["Plan"]["Total Cost"]
@@ -108,7 +109,11 @@ class Index(analyzer.Command):
 
     async def _get_update_cost(self) -> float:
         record: asyncpg.Record = await self._conn.fetchval(self._update_cost_sql)
-        self._update_cost = record * len(self._queries.with_table(self._table))
+        queries = self._queries.with_table(self._table)
+        if queries is None:
+            return 0
+
+        self._update_cost = record * len(queries)
         return self._update_cost
 
     @staticmethod
@@ -124,9 +129,9 @@ class Index(analyzer.Command):
         # removing schema name if present
         split = split[0].split(".")
         if len(split) == 1:
-            return split[0]
+            return split[0].strip()
 
-        return split[1]
+        return split[1].strip()
 
     def _format_creation_cost_query(self, query: str) -> str:
         table_name = self._extract_table_name_from_query(query)

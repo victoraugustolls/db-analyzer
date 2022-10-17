@@ -30,7 +30,7 @@ async def main():
 
 
 def parse_input() -> tuple[domain.Schema, list[domain.Suggestion]]:
-    with open("flagr.json") as file:
+    with open("tpch.json") as file:
         data = json.load(file)
 
     # TODO: create a parser
